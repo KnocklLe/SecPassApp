@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.github.com; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#3b6cff">
+  <title>SecPass</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body class="app">
+  <header class="bar">
+    <div class="brand"><img src="icons/icon-192.png" alt="" width="24" height="24"> SecPass</div>
+    <div class="bar-actions">
+      <button id="btn-sync" class="icon sync-btn" title="Synchroniser avec GitHub" aria-label="Synchroniser avec GitHub" hidden>
+        <svg viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+        <span class="dot"></span>
+      </button>
+      <button id="btn-gen-open" class="icon" title="Générateur de mots de passe" aria-label="Générateur de mots de passe">
+        <svg viewBox="0 0 24 24"><path d="M11 3.5 12.9 9l5.6 2-5.6 2L11 18.5 9.1 13l-5.6-2 5.6-2z"/><path d="M19 3v4M17 5h4"/></svg>
+      </button>
+      <button id="btn-lock" class="icon" title="Verrouiller" aria-label="Verrouiller" hidden>
+        <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      </button>
+      <button id="btn-settings" class="icon" title="Paramètres" aria-label="Paramètres">
+        <svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= premier lancement ================= -->
+  <section id="view-setup" class="view hero" hidden>
+    <div class="hero-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+    </div>
+    <h1>Bienvenue sur SecPass</h1>
+    <p class="muted">Récupère ton coffre depuis ton dépôt GitHub privé, ou importe un fichier <code>vault.json</code>.</p>
+    <div class="stack hero-actions">
+      <button type="button" id="btn-setup-github" class="primary block">Connecter mon dépôt GitHub</button>
+      <label class="button block">
+        <input type="file" class="file-input" id="setup-file" accept=".json,application/json">
+        Importer un fichier vault.json
+      </label>
+    </div>
+  </section>
+
+  <!-- ================= verrouillé ================= -->
+  <section id="view-locked" class="view hero" hidden>
+    <div class="hero-icon">
+      <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><path d="M12 15v2"/></svg>
+    </div>
+    <h1>Coffre verrouillé</h1>
+    <p class="muted" id="locked-text">Entre ton mot de passe maître pour accéder à tes comptes.</p>
+    <form id="form-unlock" class="stack">
+      <div class="field">
+        <input id="master" type="password" placeholder="Mot de passe maître" aria-label="Mot de passe maître" autocomplete="current-password" required>
+        <div class="field-btns">
+          <button type="button" class="icon" data-toggle="master" title="Afficher">
+            <svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <button class="primary block" type="submit" id="btn-unlock">
+        <span class="spinner" id="unlock-spinner" hidden></span><span id="unlock-label">Déverrouiller</span>
+      </button>
+      <p class="error" id="unlock-error" role="alert" hidden></p>
+    </form>
+  </section>
+
+  <!-- ================= liste ================= -->
+  <section id="view-list" class="view" hidden>
+    <div class="toolbar">
+      <div class="search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="search" type="search" placeholder="Rechercher un compte…" aria-label="Rechercher" autocomplete="off" enterkeyhint="search">
+      </div>
+      <button id="btn-add" class="primary square" title="Ajouter un compte" aria-label="Ajouter un compte">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </div>
+    <p id="sync-line" class="sync-line" hidden></p>
+    <h2 class="section-title"><span id="list-title">Tous les comptes</span> <span id="list-count" class="count"></span></h2>
+    <ul id="list" class="entries"></ul>
+    <div id="list-empty" class="empty" hidden>
+      <div class="hero-icon small">
+        <svg viewBox="0 0 24 24"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></svg>
+      </div>
+      <p id="list-empty-text"></p>
+      <button type="button" id="btn-add-empty" class="primary">Ajouter un compte</button>
+    </div>
+  </section>
+
+  <!-- ================= ajout / modification ================= -->
+  <section id="view-edit" class="view" hidden>
+    <div class="view-head">
+      <button type="button" id="btn-back" class="icon" title="Retour" aria-label="Retour">
+        <svg viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+      </button>
+      <h1 id="edit-title">Nouveau compte</h1>
+      <span class="spacer"></span>
+      <a id="btn-open-site" class="icon button-link" title="Ouvrir le site" aria-label="Ouvrir le site" target="_blank" rel="noopener noreferrer" hidden>
+        <svg viewBox="0 0 24 24"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+      </a>
+      <button type="button" id="btn-delete" class="icon danger" title="Supprimer ce compte" aria-label="Supprimer ce compte" hidden>
+        <svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></svg>
+      </button>
+    </div>
+    <form id="form-edit" class="stack">
+      <label for="f-name">Nom</label>
+      <input id="f-name" required autocomplete="off" placeholder="ex. Discord" autocapitalize="sentences">
+      <label for="f-username">Identifiant</label>
+      <div class="field">
+        <input id="f-username" autocomplete="off" placeholder="pseudo ou e-mail" autocapitalize="none" spellcheck="false">
+        <div class="field-btns">
+          <button type="button" class="icon" id="btn-copy-user" title="Copier l'identifiant" aria-label="Copier l'identifiant">
+            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+      </div>
+      <label for="f-password">Mot de passe</label>
+      <div class="field wide">
+        <input id="f-password" type="password" class="mono" autocomplete="new-password" placeholder="vide = généré" autocapitalize="none" spellcheck="false">
+        <div class="field-btns">
+          <button type="button" class="icon" data-toggle="f-password" title="Afficher">
+            <svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <button type="button" class="icon" id="btn-copy-pass" title="Copier le mot de passe" aria-label="Copier le mot de passe">
+            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          <button type="button" class="icon" id="btn-generate" title="Générer un mot de passe" aria-label="Générer un mot de passe">
+            <svg viewBox="0 0 24 24"><path d="M11 3.5 12.9 9l5.6 2-5.6 2L11 18.5 9.1 13l-5.6-2 5.6-2z"/><path d="M19 3v4M17 5h4"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="f-strength" class="strength" hidden><div class="strength-bar"><i></i><i></i><i></i><i></i></div><span class="strength-label"></span></div>
+      <label for="f-url">Site web</label>
+      <input id="f-url" type="url" placeholder="https://exemple.com" autocomplete="off" autocapitalize="none" spellcheck="false">
+      <label for="f-notes">Notes</label>
+      <textarea id="f-notes" rows="3" placeholder="facultatif"></textarea>
+      <p class="error" id="edit-error" role="alert" hidden></p>
+      <div class="actions fill">
+        <button type="button" id="btn-cancel">Annuler</button>
+        <button type="submit" class="primary">Enregistrer</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ================= générateur ================= -->
+  <section id="view-gen" class="view" hidden>
+    <div class="view-head">
+      <button type="button" id="btn-gen-back" class="icon" title="Retour" aria-label="Retour">
+        <svg viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+      </button>
+      <h1>Générateur</h1>
+    </div>
+    <div id="gen-value" class="gen-output" aria-live="polite"></div>
+    <div id="gen-strength" class="strength"><div class="strength-bar"><i></i><i></i><i></i><i></i></div><span class="strength-label"></span></div>
+    <div class="gen-row"><label for="gen-length">Longueur</label><output id="gen-length-out" for="gen-length">20</output></div>
+    <input id="gen-length" type="range" min="8" max="64" value="20">
+    <label class="check gen-opts"><input id="gen-symbols" type="checkbox" checked> Inclure des symboles (!@#$%…)</label>
+    <div class="actions fill">
+      <button type="button" id="btn-gen-refresh">
+        <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg> Nouveau
+      </button>
+      <button type="button" id="btn-gen-copy">
+        <svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copier
+      </button>
+      <button type="button" id="btn-gen-use" class="primary" hidden>Utiliser</button>
+    </div>
+  </section>
+
+  <!-- ================= paramètres ================= -->
+  <section id="view-settings" class="view" hidden>
+    <div class="view-head">
+      <button type="button" id="btn-settings-back" class="icon" title="Retour" aria-label="Retour">
+        <svg viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+      </button>
+      <h1>Paramètres</h1>
+    </div>
+
+    <div class="card">
+      <h2>Synchronisation GitHub</h2>
+      <p class="muted">Le coffre (chiffré) est récupéré et renvoyé dans ton dépôt privé. Ton mot de passe maître ne quitte jamais le téléphone.</p>
+      <form id="form-sync" class="stack">
+        <label for="s-owner">Propriétaire du dépôt</label>
+        <input id="s-owner" placeholder="ton pseudo GitHub" autocomplete="off" autocapitalize="none" spellcheck="false" required>
+        <label for="s-repo">Dépôt</label>
+        <input id="s-repo" placeholder="SecPass" autocomplete="off" autocapitalize="none" spellcheck="false" required>
+        <div class="two">
+          <div class="stack"><label for="s-branch">Branche</label><input id="s-branch" value="main" autocomplete="off" autocapitalize="none" spellcheck="false"></div>
+          <div class="stack"><label for="s-path">Fichier</label><input id="s-path" value="vault.json" autocomplete="off" autocapitalize="none" spellcheck="false"></div>
+        </div>
+        <label for="s-token">Jeton d'accès GitHub</label>
+        <div class="field">
+          <input id="s-token" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="github_pat_…">
+          <div class="field-btns">
+            <button type="button" class="icon" data-toggle="s-token" title="Afficher">
+              <svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <p id="s-token-hint" class="hint" hidden>Un jeton est déjà enregistré (chiffré). Laisse vide pour le garder.</p>
+        <details class="help">
+          <summary>Comment créer le jeton ?</summary>
+          <ol>
+            <li>Sur github.com : ta photo › <b>Settings</b> › <b>Developer settings</b> › <b>Personal access tokens</b> › <b>Fine-grained tokens</b> › <b>Generate new token</b>.</li>
+            <li><b>Repository access</b> : <i>Only select repositories</i> › ton dépôt SecPass uniquement.</li>
+            <li><b>Permissions</b> › <b>Contents</b> : <i>Read and write</i>. Rien d'autre.</li>
+            <li>Choisis une expiration, génère, copie le jeton et colle-le ici.</li>
+          </ol>
+        </details>
+        <p class="error" id="sync-error" role="alert" hidden></p>
+        <div class="actions">
+          <button type="submit" class="primary" id="btn-sync-save"><span class="spinner" hidden></span><span>Enregistrer et synchroniser</span></button>
+        </div>
+        <button type="button" id="btn-sync-remove" class="danger" hidden>Déconnecter GitHub</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Fichier vault.json</h2>
+      <div class="split">
+        <div><strong>Exporter</strong><span class="muted">Télécharge le coffre chiffré.</span></div>
+        <button type="button" id="btn-export">Exporter</button>
+      </div>
+      <div class="split">
+        <div><strong>Importer</strong><span class="muted">Remplace le coffre de ce téléphone.</span></div>
+        <label class="button">
+          <input type="file" class="file-input" id="settings-file" accept=".json,application/json">
+          Importer
+        </label>
+      </div>
+    </div>
+
+    <div class="card danger-zone">
+      <h2>Ce téléphone</h2>
+      <p class="muted">Efface le coffre, le jeton GitHub et les réglages de ce téléphone. Ton coffre sur GitHub et sur ton PC n'est pas touché.</p>
+      <div class="actions"><button type="button" id="btn-wipe" class="danger">Effacer SecPass de ce téléphone</button></div>
+    </div>
+    <p class="muted center small">SecPass mobile · chiffrement AES-256-GCM + scrypt, compatible mdp.py et l'extension</p>
+  </section>
+
+  <!-- ================= confirmation ================= -->
+  <div id="confirm" class="overlay" hidden>
+    <div class="dialog" role="alertdialog" aria-labelledby="confirm-title" aria-describedby="confirm-text">
+      <div class="dialog-head">
+        <svg viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+        <h1 id="confirm-title">Attention</h1>
+      </div>
+      <p id="confirm-text"></p>
+      <div class="actions fill">
+        <button type="button" id="confirm-yes" class="danger">Continuer</button>
+        <button type="button" id="confirm-no" class="primary">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" role="status"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

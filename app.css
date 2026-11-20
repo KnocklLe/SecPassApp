@@ -1,0 +1,85 @@
+/* SecPass mobile — ajustements pour téléphone (s'ajoute à style.css, partagé avec l'extension) */
+
+body.app {
+  min-height: 100dvh;
+  padding-bottom: env(safe-area-inset-bottom);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: contain;
+}
+body.app .bar { padding-top: env(safe-area-inset-top); height: calc(56px + env(safe-area-inset-top)); }
+body.app .brand { font-size: 16px; }
+body.app .view { max-width: 560px; margin: 0 auto; padding: 16px; }
+body.app .hero { padding: 48px 24px 24px; }
+body.app .hero-actions { width: 100%; max-width: 360px; margin-top: 20px; gap: 10px; }
+
+/* cibles tactiles plus grandes, texte à 16 px (évite le zoom automatique sur les champs) */
+body.app input:not([type=checkbox]):not([type=range]):not([type=file]),
+body.app textarea { height: 46px; font-size: 16px; }
+body.app textarea { height: auto; }
+body.app button, body.app .button { height: 44px; }
+body.app button.icon { width: 40px; height: 40px; }
+body.app button.square { width: 46px; height: 46px; }
+body.app button.block, body.app .button.block { width: 100%; height: 48px; }
+body.app .field-btns { top: 3px; }
+body.app .field > input { padding-right: 48px !important; }
+body.app .field.wide > input { padding-right: 128px !important; }
+body.app .stack > label { font-size: 13px; }
+body.app .stack > label.button { font-size: 15px; color: var(--text); margin-top: 0; }
+
+/* liste : pas de survol sur téléphone, les boutons sont toujours visibles */
+body.app .entry { padding: 6px 4px 6px 6px; }
+body.app .entry:not(.site) .entry-actions button { opacity: 1; }
+body.app .entry { background: var(--surface); box-shadow: var(--shadow); }
+body.app .entries { gap: 6px; }
+body.app .avatar { width: 40px; height: 40px; font-size: 17px; border-radius: 11px; }
+body.app .entry-name { font-size: 15px; }
+
+/* barre de recherche collée en haut quand on fait défiler */
+body.app #view-list .toolbar {
+  position: sticky; top: calc(56px + env(safe-area-inset-top)); z-index: 2;
+  margin: -16px -16px 0; padding: 16px 16px 10px;
+  background: var(--bg);
+}
+
+.sync-line { margin: 6px 4px 0; font-size: 12.5px; color: var(--muted); }
+.sync-line.error { color: var(--danger); }
+.sync-line.pending { color: var(--warning); }
+
+/* point d'état sur le bouton de synchro */
+.sync-btn { position: relative; }
+.sync-btn .dot {
+  position: absolute; right: 7px; bottom: 7px;
+  width: 9px; height: 9px; border-radius: 50%;
+  border: 2px solid var(--surface); background: var(--muted);
+}
+.sync-btn.ok .dot { background: var(--success); }
+.sync-btn.pending .dot { background: var(--warning); }
+.sync-btn.error .dot { background: var(--danger); }
+.sync-btn.busy svg { animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .35; } }
+
+/* lien « ouvrir le site » qui ressemble à un bouton icône */
+.button-link {
+  display: inline-grid; place-items: center;
+  width: 40px; height: 40px; border-radius: var(--radius-sm);
+  color: var(--muted);
+}
+.button-link:hover { background: var(--surface-2); color: var(--text); }
+
+/* paramètres */
+body.app .card { margin-top: 12px; padding: 18px; }
+body.app .card h2 { font-size: 15px; font-weight: 650; margin-bottom: 4px; }
+body.app .card > .muted { font-size: 13.5px; margin-bottom: 12px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hint { font-size: 12.5px; color: var(--success); }
+.help { font-size: 13px; color: var(--muted); margin-top: 6px; }
+.help summary { cursor: pointer; color: var(--accent); font-weight: 600; padding: 4px 0; }
+.help ol { padding-left: 20px; margin: 6px 0 0; display: grid; gap: 6px; }
+body.app .split { flex-wrap: wrap; }
+body.app .split > div { flex: 1 1 180px; }
+body.app .split .muted { display: block; font-size: 13px; }
+#btn-sync-remove { align-self: flex-start; margin-top: 4px; }
+.small { font-size: 12px; margin-top: 18px; }
+.center { text-align: center; }
+
+body.app #toast { bottom: calc(18px + env(safe-area-inset-bottom)); font-size: 14px; }
