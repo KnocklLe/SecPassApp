@@ -1,7 +1,7 @@
 {
-  "versionCode": 3,
-  "versionName": "1.1.0",
-  "apk": "SecPass-1.1.0.apk",
-  "sha256": "26e751d1a5fe6280151550f3609dafb39dc4c62d40cea2f796aa5663ee000294",
-  "notes": "Mise à jour directement depuis l'appli"
+  "versionCode": 4,
+  "versionName": "1.1.1",
+  "apk": "SecPass-1.1.1.apk",
+  "sha256": "7193e7bf87c4c028ee659937a7b76ea4eb731b8883fd843e8faea5d461fe0191",
+  "notes": "Message de confirmation après une mise à jour"
 }
